@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Indicações</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: #f9fafb; color: #111827; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+  .topbar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .logo em { color: #1a56db; font-style: normal; }
+  .mode-tag { font-size: 11px; background: #e8f0fe; color: #1a56db; padding: 3px 10px; border-radius: 20px; }
+  .page { max-width: 520px; margin: 0 auto; padding: 32px 20px 60px; }
+  .page-wide { max-width: 720px; margin: 0 auto; padding: 28px 20px 60px; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: 6px; }
+  .page-sub { font-size: 14px; color: #9ca3af; margin-bottom: 28px; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; }
+  .card-title { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; margin-bottom: 16px; }
+  .form-group { margin-bottom: 18px; }
+  label { font-size: 13px; font-weight: 500; color: #4b5563; display: block; margin-bottom: 7px; }
+  input, select, textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: #1a56db; }
+  .btn { display: inline-flex; padding: 11px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+  .btn-primary { background: #1a56db; color: #fff; }
+  .btn-primary:hover { background: #1447b8; }
+  .btn-secondary { background: #fff; color: #1f2937; border: 1.5px solid #e5e7eb; }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+  .back-btn { background: none; border: none; color: #1a56db; font-size: 13px; cursor: pointer; margin-bottom: 22px; }
+  .switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+  .sw-card { background: #fff; border: 2px solid #e5e7eb; border-radius: 16px; padding: 22px 18px; cursor: pointer; text-align: center; }
+  .sw-card:hover { border-color: #b3caf7; }
+  .sw-icon { font-size: 28px; margin-bottom: 10px; }
+  .badge { display: inline-flex; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  .badge-new { background: #fdf6b2; color: #c27803; }
+  .badge-contact { background: #e8f0fe; color: #1a56db; }
+  .badge-proposal { background: #edebfe; color: #6c2bd9; }
+  .badge-closed { background: #def7ec; color: #0e9f6e; }
+  .badge-lost { background: #fde8e8; color: #c81e1e; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .metric { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; text-align: center; }
+  .metric-val { font-size: 26px; font-weight: 600; }
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1.5px solid #e5e7eb; background: #fff; cursor: pointer; }
+  .filter-btn.active { background: #1a56db; color: #fff; border-color: #1a56db; }
+  .ind-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+  .ind-item:hover { background: #f9fafb; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+  .cons-list { display: flex; flex-direction: column; gap: 10px; }
+  .cons-opt { background: #fff; border: 2px solid #e5e7eb; border-radius: 10px; padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 14px; }
+  .cons-opt.selected { border-color: #1a56db; background: #e8f0fe; }
+  .cons-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+  .success-wrap { text-align: center; padding: 48px 24px; }
+  .success-circle { width: 64px; height: 64px; border-radius: 50%; background: #def7ec; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+  .home-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+  .home-logo { font-family: 'DM Serif Display', serif; font-size: 36px; text-align: center; }
+  .home-logo em { color: #1a56db; font-style: normal; }
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 12px 22px; border-radius: 10px; font-size: 13px; z-index: 999; display: none; }
+  #toast.show { display: block; }
+  .loading { text-align: center; padding: 32px; color: #9ca3af; }
+  .field-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  .steps { display: flex; margin-bottom: 8px; }
+  .step { flex: 1; text-align: center; }
+  .step-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #e5e7eb; background: #fff; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+  .step-dot.done { background: #1a56db; border-color: #1a56db; color: #fff; }
+  .step-lbl { font-size: 10px; color: #9ca3af; }
+  @media (max-width: 480px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="screen active" id="s-home">
+  <div class="home-wrap">
+    <div class="home-logo">Portal de <em>Indicações</em></div>
+    <div class="home-tagline" style="margin: 10px 0 40px; color: #9ca3af;">Selecione como deseja acessar</div>
+    <div style="width:100%;max-width:440px;">
+      <div class="switcher">
+        <div class="sw-card" onclick="go('s-form')"><div class="sw-icon">🤝</div><div>Quero indicar</div><div style="font-size:12px;color:#9ca3af;">Indique um conhecido</div></div>
+        <div class="sw-card" onclick="go('s-consultor-select')"><div class="sw-icon">📊</div><div>Sou consultor</div><div style="font-size:12px;color:#9ca3af;">Gerencie indicações</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-form">
+  <div class="topbar"><div class="logo">Portal de <em>Indicações</em></div><span class="mode-tag">Indicar</span></div>
+  <div class="page">
+    <button class="back-btn" onclick="go('s-home')">← Voltar</button>
+    <div class="page-title">Nova indicação</div>
+    <div class="card">
+      <div class="form-group"><label>Seu nome *</label><input type="text" id="f-indicador" placeholder="Seu nome completo"></div>
+      <div class="form-group"><label>Consultor *</label><select id="f-consultor"><option value="">Selecione...</option></select></div>
+      <div class="form-group"><label>Nome do indicado *</label><input type="text" id="f-nome" placeholder="Nome completo"></div>
+      <div class="form-group"><label>Telefone *</label><input type="tel" id="f-tel" placeholder="(11) 99999-9999"></div>
+      <div class="form-group"><label>Observação</label><textarea id="f-nota" rows="3"></textarea></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="enviarIndicacao()">Enviar indicação</button>
+  </div>
+</div>
+
+<div class="screen" id="s-sucesso">
+  <div class="topbar"><div class="logo">Portal de <em>Indicações</em></div></div>
+  <div class="page">
+    <div class="success-wrap">
+      <div class="success-circle">✓</div>
+      <div class="page-title">Indicação enviada!</div>
+      <p style="margin:20px 0; color:#9ca3af;">O consultor <strong id="conf-consultor"></strong> receberá os dados</p>
+      <button class="btn btn-primary" onclick="go('s-form')">Nova indicação</button>
+      <button class="btn btn-secondary" onclick="go('s-home')">Início</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-consultor-select">
+  <div class="topbar"><div class="logo">Portal de <em>Indicações</em></div><span class="mode-tag">Consultores</span></div>
+  <div class="page">
+    <button class="back-btn" onclick="go('s-home')">← Voltar</button>
+    <div class="page-title">Quem é você?</div>
+    <div class="cons-list" id="cons-list"></div>
+    <button class="btn btn-primary btn-full" id="btn-acessar" onclick="acessarConsultor()" style="display:none;">Acessar painel →</button>
+  </div>
+</div>
+
+<div class="screen" id="s-painel">
+  <div class="topbar"><div class="logo">Portal de <em>Indicações</em></div><button class="btn btn-secondary btn-sm" onclick="go('s-consultor-select')">Trocar</button></div>
+  <div class="page-wide">
+    <div class="page-title" id="painel-titulo">Minhas indicações</div>
+    <div class="metrics" id="painel-metrics"></div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filtrar('todos',this)">Todas</button>
+      <button class="filter-btn" onclick="filtrar('new',this)">Novas</button>
+      <button class="filter-btn" onclick="filtrar('contact',this)">Contato</button>
+      <button class="filter-btn" onclick="filtrar('proposal',this)">Proposta</button>
+      <button class="filter-btn" onclick="filtrar('closed',this)">Fechadas</button>
+      <button class="filter-btn" onclick="filtrar('lost',this)">Perdidas</button>
+    </div>
+    <div class="card" style="padding:0;"><div id="lista-indicacoes"></div></div>
+  </div>
+</div>
+
+<div class="screen" id="s-detalhe">
+  <div class="topbar"><div class="logo">Portal de <em>Indicações</em></div></div>
+  <div class="page">
+    <button class="back-btn" onclick="go('s-painel')">← Voltar</button>
+    <div id="detalhe-content"></div>
+  </div>
+</div>
+
+<script>
+// ⚠️ COLOQUE A NOVA URL DO SEU APPS SCRIPT AQUI ⚠️
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBHUP6cqZt9LVsUQYuAMKeMIry-TPFiIQiyA3C0kDsUEaG_k4PcRVnHQzPTuWSNjii/exec';
+
+const CONSULTORES = [
+  { nome: 'Renato Benedetti', cor: '#dbeafe', tc: '#1e40af' },
+  { nome: 'Vagner Santos', cor: '#fce7f3', tc: '#9d174d' },
+  { nome: 'Fabricio Araujo', cor: '#d1fae5', tc: '#065f46' },
+  { nome: 'Arnaldo', cor: '#ede9fe', tc: '#5b21b6' },
+  { nome: 'Rodrigues Silva', cor: '#fef3c7', tc: '#92400e' },
+  { nome: 'Vlamir Santos', cor: '#e0f2fe', tc: '#0369a1' },
+  { nome: 'Erik Carvalho', cor: '#fee2e2', tc: '#991b1b' }
+];
+
+let consultorAtivo = null;
+let filtroAtivo = 'todos';
+let editandoId = null;
+let indicacoes = [];
+
+const statusMap = {
+  new: { label: 'Nova', cls: 'badge-new', step: 0 },
+  contact: { label: 'Em contato', cls: 'badge-contact', step: 1 },
+  proposal: { label: 'Proposta', cls: 'badge-proposal', step: 2 },
+  closed: { label: 'Fechado', cls: 'badge-closed', step: 3 },
+  lost: { label: 'Perdido', cls: 'badge-lost', step: -1 }
+};
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function fetchAPI(url, callback) {
+  fetch(url)
+    .then(res => res.json())
+    .then(data => callback(data))
+    .catch(err => callback({ error: err.message }));
+}
+
+function postAPI(data, callback) {
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(() => callback({ success: true }))
+    .catch(() => callback({ success: false }));
+}
+
+function init() {
+  const sel = document.getElementById('f-consultor');
+  CONSULTORES.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.nome;
+    o.textContent = c.nome;
+    sel.appendChild(o);
+  });
+  carregarDados();
+}
+
+function carregarDados() {
+  fetchAPI(SCRIPT_URL, (data) => {
+    if (data && !data.error) indicacoes = Array.isArray(data) ? data : [];
+    renderConsultoresList();
+  });
+}
+
+function renderConsultoresList() {
+  const el = document.getElementById('cons-list');
+  if (!el) return;
+  el.innerHTML = CONSULTORES.map(c => {
+    const ini = c.nome.split(' ').slice(0,2).map(p=>p[0]).join('');
+    const count = indicacoes.filter(i => i.consultor === c.nome).length;
+    return `<div class="cons-opt" onclick="selecionarConsultor('${c.nome}',this)">
+      <div class="cons-avatar" style="background:${c.cor};color:${c.tc};">${ini}</div>
+      <div><strong>${c.nome}</strong><br><small>${count} indicaç${count===1?'ão':'ões'}</small></div>
+    </div>`;
+  }).join('');
+}
+
+function selecionarConsultor(nome, el) {
+  document.querySelectorAll('.cons-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  consultorAtivo = nome;
+  document.getElementById('btn-acessar').style.display = 'flex';
+}
+
+function acessarConsultor() {
+  if (!consultorAtivo) return;
+  fetchAPI(SCRIPT_URL + '?consultor=' + encodeURIComponent(consultorAtivo), (data) => {
+    indicacoes = Array.isArray(data) ? data : [];
+    document.getElementById('painel-titulo').textContent = consultorAtivo;
+    renderMetrics();
+    renderLista();
+    go('s-painel');
+  });
+}
+
+function renderMetrics() {
+  const total = indicacoes.length;
+  const andamento = indicacoes.filter(i => ['new','contact','proposal'].includes(i.status)).length;
+  const fechados = indicacoes.filter(i => i.status === 'closed').length;
+  document.getElementById('painel-metrics').innerHTML = `
+    <div class="metric"><div class="metric-val">${total}</div><div>Total</div></div>
+    <div class="metric"><div class="metric-val">${andamento}</div><div>Andamento</div></div>
+    <div class="metric"><div class="metric-val">${fechados}</div><div>Fechados</div></div>
+  `;
+}
+
+function filtrar(f, el) {
+  filtroAtivo = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderLista();
+}
+
+function renderLista() {
+  let items = indicacoes.filter(i => filtroAtivo === 'todos' ? true : i.status === filtroAtivo);
+  const el = document.getElementById('lista-indicacoes');
+  if (!items.length) {
+    el.innerHTML = '<div style="padding:32px;text-align:center;color:#9ca3af;">Nenhuma indicação</div>';
+    return;
+  }
+  const c = CONSULTORES.find(x => x.nome === consultorAtivo) || CONSULTORES[0];
+  el.innerHTML = items.map(ind => {
+    const s = statusMap[ind.status] || statusMap.new;
+    const ini = (ind.nome || '?').split(' ').slice(0,2).map(p=>p[0]).join('');
+    return `<div class="ind-item" onclick="abrirDetalhe('${ind.id}')">
+      <div style="display:flex;gap:12px;"><div class="avatar" style="background:${c.cor};color:${c.tc};">${ini}</div>
+      <div><div><strong>${escapeHtml(ind.nome)}</strong></div><div style="font-size:12px;color:#9ca3af;">${escapeHtml(ind.tel)}</div></div></div>
+      <span class="badge ${s.cls}">${s.label}</span>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(text) { return text ? String(text).replace(/[&<>]/g, function(m){if(m==='&')return '&amp;';if(m==='<')return '&lt;';if(m==='>')return '&gt;';return m;}) : ''; }
+
+function abrirDetalhe(id) { editandoId = id; renderDetalhe(); go('s-detalhe'); }
+
+function renderDetalhe() {
+  const ind = indicacoes.find(i => i.id === editandoId);
+  if (!ind) return;
+  const s = statusMap[ind.status] || statusMap.new;
+  const c = CONSULTORES.find(x => x.nome === ind.consultor) || CONSULTORES[0];
+  const ini = (ind.nome || '?').split(' ').slice(0,2).map(p=>p[0]).join('');
+  document.getElementById('detalhe-content').innerHTML = `
+    <div style="display:flex;gap:14px;margin-bottom:22px;">
+      <div class="avatar" style="width:46px;height:46px;background:${c.cor};color:${c.tc};">${ini}</div>
+      <div><div style="font-size:18px;font-weight:600;">${escapeHtml(ind.nome)}</div>
+      <div>Indicado por ${escapeHtml(ind.indicador)} · <span class="badge ${s.cls}">${s.label}</span></div></div>
+    </div>
+    <div class="card"><div class="card-title">Dados</div>
+      <div class="field-row"><span>Telefone</span><span><strong>${escapeHtml(ind.tel)}</strong></span></div>
+      ${ind.nota ? `<div class="field-row"><span>Observação</span><span>${escapeHtml(ind.nota)}</span></div>` : ''}
+    </div>
+    <div class="card"><div class="card-title">Atualizar</div>
+      <div class="form-group"><label>Nome</label><input id="ed-nome" value="${escapeHtml(ind.nome)}"></div>
+      <div class="form-group"><label>Telefone</label><input id="ed-tel" value="${escapeHtml(ind.tel)}"></div>
+      <div class="form-group"><label>Status</label><select id="ed-status">${Object.entries(statusMap).map(([k,v])=>`<option value="${k}" ${ind.status===k?'selected':''}>${v.label}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Observação</label><textarea id="ed-nota">${escapeHtml(ind.nota||'')}</textarea></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="salvarEdicao()">Salvar alterações</button>
+  `;
+}
+
+function salvarEdicao() {
+  const ind = indicacoes.find(i => i.id === editandoId);
+  if (!ind) return;
+  ind.nome = document.getElementById('ed-nome').value;
+  ind.tel = document.getElementById('ed-tel').value;
+  ind.status = document.getElementById('ed-status').value;
+  ind.nota = document.getElementById('ed-nota').value;
+  ind.updated = new Date().toLocaleDateString('pt-BR');
+  postAPI({ action: 'update', ...ind }, () => {
+    toast('✓ Salvo!');
+    renderLista();
+    renderMetrics();
+    renderDetalhe();
+  });
+}
+
+function enviarIndicacao() {
+  const indicador = document.getElementById('f-indicador').value.trim();
+  const consultor = document.getElementById('f-consultor').value;
+  const nome = document.getElementById('f-nome').value.trim();
+  const tel = document.getElementById('f-tel').value.trim();
+  const nota = document.getElementById('f-nota').value.trim();
+  if (!indicador || !consultor || !nome || !tel) return toast('⚠️ Preencha todos os campos');
+  const payload = {
+    action: 'add',
+    id: Date.now().toString(),
+    indicador, consultor, nome, tel, nota: nota || '',
+    status: 'new', admin: '',
+    updated: new Date().toLocaleDateString('pt-BR')
+  };
+  postAPI(payload, () => {
+    document.getElementById('conf-consultor').textContent = consultor;
+    document.getElementById('f-indicador').value = '';
+    document.getElementById('f-nome').value = '';
+    document.getElementById('f-tel').value = '';
+    document.getElementById('f-nota').value = '';
+    document.getElementById('f-consultor').value = '';
+    toast('✓ Indicação enviada!');
+    go('s-sucesso');
+    carregarDados();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
